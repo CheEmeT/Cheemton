@@ -3,4 +3,8 @@ project(Cheemton)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(Cheemton src/main.cpp src/lexer.h)
+file(GLOB src_ RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*)
+message(${src_})
+
+add_executable(Cheemton
+        ${src_})
