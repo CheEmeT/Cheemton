@@ -1,12 +1,17 @@
 #include <iostream>
 #include "lexer.h"
+#include "parser.h"
 
 int main() {
-    std::string code = "(23 + 4 - (3 - 4)) \n      3     + 2";
+    std::string code = "(2 + 1) * 3 - 3\n";
     cheemton::Lexer lexer(code);
-    auto arr = lexer.analyze();
-    for(auto& ref : arr)
+    auto v = lexer.getTokens();
+    for(auto & ref : v){
         std::cout << *ref << std::endl;
+    }
+    cheemton::Parser parser(std::move(v));
+    std::cout << *parser.getTokenTree();
+
 
 
     return 0;

@@ -18,7 +18,7 @@ namespace  cheemton{
 
         void addChild(std::unique_ptr<TokenTreeNode> &child ){
 
-            //children_.push_back(std::move(child));
+            children_.push_back(std::move(child));
         }
 
     };
@@ -27,7 +27,7 @@ namespace  cheemton{
     private:
         TokenTreeNode start_;
     public:
-        TokenTree(TokenTreeNode  &start): start_(start){}
+        //TokenTree(TokenTreeNode  &start): start_(start){}
     };
 
 

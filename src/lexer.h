@@ -16,8 +16,10 @@ namespace cheemton {
         NUMBER,
         OP_PLUS,
         OP_MINUS,
-        PARANTHES_OPEN,
-        PARANTHES_CLOSED,
+        OP_MULT,
+        OP_DIV,
+        PARENTHES_OPEN,
+        PARENTHES_CLOSED,
     };
 
 
@@ -43,10 +45,10 @@ namespace cheemton {
             case TokenType::NUMBER:
                 ostream << "[NUM]: " << static_cast<NumberToken const &>(token).getNumber();
                 break;
-            case TokenType::PARANTHES_OPEN:
+            case TokenType::PARENTHES_OPEN:
                 ostream << "[PTHS O]";
                 break;
-            case TokenType::PARANTHES_CLOSED:
+            case TokenType::PARENTHES_CLOSED:
                 ostream << "[PTHS C]";
                 break;
             case TokenType::OP_MINUS:
@@ -55,6 +57,13 @@ namespace cheemton {
             case TokenType::OP_PLUS:
                 ostream << "[OP +]";
                 break;
+            case TokenType::OP_MULT:
+                ostream << "[OP *]";
+                break;
+            case TokenType::OP_DIV:
+                ostream << "[OP /]";
+                break;
+
         }
         return ostream;
     }
@@ -75,26 +84,31 @@ namespace cheemton {
     public:
         Lexer(std::string code): code_(std::move(code)){};
 
-        std::vector<std::unique_ptr<Token>> analyze() {
+        std::vector<std::unique_ptr<Token>> getTokens() {
             std::vector<std::unique_ptr<Token>> ret; //TODO: Estimate size
             std::stringstream stream(code_,  std::ios_base::in );
 
             char c;
-            while(!stream.eof()){
-                stream.get(c);
+            while(!stream.get(c).eof()){
                 cur_char_++;
                 switch (c) {
                     case '(':
-                        ret.emplace_back(new Token(TokenType::PARANTHES_OPEN));
+                        ret.emplace_back(new Token(TokenType::PARENTHES_OPEN));
                         break;
                     case ')':
-                        ret.emplace_back(new Token(TokenType::PARANTHES_CLOSED));
+                        ret.emplace_back(new Token(TokenType::PARENTHES_CLOSED));
                         break;
                     case '+':
                         ret.emplace_back(new Token(TokenType::OP_PLUS));
                         break;
                     case '-':
                         ret.emplace_back(new Token(TokenType::OP_MINUS));
+                        break;
+                   case '*':
+                        ret.emplace_back(new Token(TokenType::OP_MULT));
+                        break;
+                    case '/':
+                        ret.emplace_back(new Token(TokenType::OP_DIV));
                         break;
                     case '\n':
                         cur_line_++;
