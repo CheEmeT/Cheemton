@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <memory>
+#include <algorithm>
 #include "lexer.h"
 namespace  cheemton{
 
@@ -54,17 +55,30 @@ namespace  cheemton{
     //TODO: Refactor parser
     class Parser{
     private:
+        //First non-terminal
         std::unique_ptr<TokenTreeNode> start_;
+        //Short name for vector iterator type
         using tokenIter = std::vector<std::unique_ptr<Token>>::iterator;
+        //Array of tokens
         std::vector<std::unique_ptr<Token>> tokens_;
 
 
-        /*Gramma:
-        * F: (F)F | E | null
-        * E: D ± F | D
-        * D: T \* D | T
-        * T: number | (F)
-        */
+        /*              Grammar:
+         *   E - <expression>, T - <term>, F - <factor>
+         *   E - first non-terminal
+         *
+         *   E -> E + T
+         *   E -> E - T
+         *   E -> T
+         *
+         *   T -> T * F
+         *   T -> T / F
+         *   T -> F
+         *
+         *   F -> (E)
+         *   F -> <number>
+         */
+#if 0
         TokenTreeNode* parseF(tokenIter begin, tokenIter end){
             if(begin->get()->getType() == TokenType::PARENTHES_OPEN && (end - 1)->get()->getType() == TokenType::PARENTHES_CLOSED)
                return parseE(begin + 1, end - 1);
@@ -135,13 +149,30 @@ namespace  cheemton{
                 return parseE(begin + 1, end - 1);
             throw std::runtime_error("[PARSER] You messed with parentheses");
         }
-
+#endif
+        TokenTreeNode* parseE(tokenIter begin, tokenIter end){
+            TokenTreeNode* ptr;
+            for(auto i = begin; i < end; ++i){
+                TokenType type = i->get()->getType();
+                if(type == TokenType::PARENTHES_OPEN)
+                    if(end->get()->getType() == TokenType::PARENTHES_CLOSED)
+                        continue;
+                    else
+                        for(auto j = i; j < end; ++j){
+                            if(j->get()->getType() == TokenType::PARENTHES_CLOSED) {
+                                i = j;
+                                break;
+                            }
+                        }
+            }
+            return nullptr;
+        }
     public:
         Parser(std::vector<std::unique_ptr<Token>> &&tokens):
-        tokens_(std::move(tokens)){}
+            tokens_(std::move(tokens)){}
 
         TokenTreeNode* getTokenTree(){
-            start_ = std::unique_ptr<TokenTreeNode>(parseF(tokens_.begin(), tokens_.end()));
+            start_ = std::unique_ptr<TokenTreeNode>(parseE(tokens_.begin(), tokens_.end()));
             return start_.get();
         }
     };

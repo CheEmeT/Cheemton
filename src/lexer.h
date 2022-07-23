@@ -82,8 +82,15 @@ namespace cheemton {
         }
 
     public:
-        Lexer(std::string code): code_(std::move(code)){};
-
+        Lexer(std::string code):
+            code_(std::move(code)){};
+        /*
+         * Alphabet:
+         *          spaces      ' ', '\n', '\t', '\r'
+         *          parentheses '(', ')'
+         *          arithmetic  '+', '-'
+         *          digits      '0' - '9'
+        */
         std::vector<std::unique_ptr<Token>> getTokens() {
             std::vector<std::unique_ptr<Token>> ret; //TODO: Estimate size
             std::stringstream stream(code_,  std::ios_base::in );

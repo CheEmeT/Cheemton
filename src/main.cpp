@@ -9,8 +9,8 @@ int main() {
     for(auto & ref : v){
         std::cout << *ref << std::endl;
     }
-    cheemton::Parser parser(std::move(v));
-    std::cout << *parser.getTokenTree();
+    //cheemton::Parser parser(std::move(v));
+    //std::cout << *parser.getTokenTree();
 
 
 
