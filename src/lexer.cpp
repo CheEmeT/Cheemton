@@ -3,20 +3,20 @@
 using namespace cheemton;
 
 
-std::vector<Node>* Lexer::analyzeString(const std::string& inputString)
+std::vector<Lexeme>* Lexer::analyzeString(const std::string& inputString)
 {
-	std::vector<cheemton::Node>* result;
+	std::vector<cheemton::Lexeme>* result;
 	std::string error;
 	result = analyzeString(inputString, &error);
 	std::cout << error;
 	return result;
 }
 
-std::vector<cheemton::Node>* Lexer::analyzeString(const std::string &inputString, std::string* errorOutput)
+std::vector<cheemton::Lexeme>* Lexer::analyzeString(const std::string &inputString, std::string* errorOutput)
 {
 	std::istringstream inputStream{inputString};
 
-	std::vector<Node> *result = new std::vector<Node>{};
+	std::vector<Lexeme> *result = new std::vector<Lexeme>{};
 	result->reserve(inputString.size() / 2);
 
 	int line = 0;
@@ -34,7 +34,7 @@ std::vector<cheemton::Node>* Lexer::analyzeString(const std::string &inputString
 			continue;
 		}
 		if (isdigit(c)) {
-			Node &node = result->emplace_back(NodeType::Number, "");
+			Lexeme &node = result->emplace_back(Lexeme::LexemeType::Number, "");
 			node.data.push_back(c);
 			while (isdigit( (c = inputStream.get())) )
 			{
@@ -46,25 +46,25 @@ std::vector<cheemton::Node>* Lexer::analyzeString(const std::string &inputString
 		switch (c)
 		{
 		case '(':
-			result->emplace_back(NodeType::LeftParentheses, "");
+			result->emplace_back(Lexeme::LexemeType::LeftParentheses, "");
 			break;
 		case ')':
-			result->emplace_back(NodeType::RightParentheses, "");
+			result->emplace_back(Lexeme::LexemeType::RightParentheses, "");
 			break;
 		case '+':
-			result->emplace_back(NodeType::Plus, "");
+			result->emplace_back(Lexeme::LexemeType::Plus, "");
 			break;
 		case '-':
-			result->emplace_back(NodeType::Minus, "");
+			result->emplace_back(Lexeme::LexemeType::Minus, "");
 			break;
 		case '*':
-			result->emplace_back(NodeType::Multiply, "");
+			result->emplace_back(Lexeme::LexemeType::Multiply, "");
 			break;
 		case '/':
-			result->emplace_back(NodeType::Divide, "");
+			result->emplace_back(Lexeme::LexemeType::Divide, "");
 			break;
 		default:
-			errorOutput->append(std::format("[LEXER] [{}:{}] Unknown character \'{}\'", line, position, c));
+			errorOutput->append(std::format("[ERROR][LEXER] [{}:{}] Unknown character \'{}\'", line, position, c));
 			delete result;
 			return nullptr;
 		}
