@@ -5,9 +5,13 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <format>
 #include <vector>
 
+#if _MSC_VER
+#include <format>
+#else
+#include <fmt/format.h>
+#endif
 
 namespace cheemton {
 

@@ -5,3 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 message("Cmake strted")
 
 add_executable(Cheemton "src/main.cpp" "src/lexer.cpp" "src/parser.cpp" "src/utils.cpp" "src/lexer.h" "src/utils.h" "src/parser.h" "src/cheemton.h" )
+
+if(NOT MSVC)
+  find_package(fmt REQUIRED)
+  target_link_libraries(Cheemton PRIVATE fmt::fmt)
+endif()
