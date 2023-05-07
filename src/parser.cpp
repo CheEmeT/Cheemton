@@ -31,7 +31,6 @@ Node* cheemton::Parser::getAST()
 
 Node* cheemton::Parser::statement()
 {
-	std::cout << "[Statement]\n";
 	Node* result = new Node{};
 	result->left = expression();
 	return result;
@@ -46,7 +45,6 @@ Node* cheemton::Parser::expression()
 
 	Node* result = new Node{};
 	if (m_current->type == Lexeme::LeftParentheses) {
-		std::cout << "[LP]\n";
 		result->left = new Node{};
 		result->left->type = Node::LeftParentheses;
 		
@@ -60,7 +58,6 @@ Node* cheemton::Parser::expression()
 		}
 
 		m_current = getNextLexeme();
-		std::cout << "[Expression]\n[RP]\n";
 
 		return result;
 	}
@@ -77,7 +74,6 @@ Node* cheemton::Parser::expression()
 
 	result->middle = new Node{};
 	result->middle->type = m_current->type == Lexeme::Plus ? Node::Plus : Node::Minus;
-	std::cout << std::format("[Expression {}]\n", m_current->type == Lexeme::Plus ? "Node::Plus" : "Node::Minus");
 
 	m_current = getNextLexeme();
 	result->right = expression();
@@ -97,13 +93,11 @@ Node* cheemton::Parser::term()
 	result->left = factor();
 	m_current = getNextLexeme();
 	if (m_current->type != Lexeme::Multiply && m_current->type != Lexeme::Divide) {
-		std::cout << "[Term]\n";
 		return result;
 	}
 
 	result->middle = new Node{};
 	result->middle->type = m_current->type == Lexeme::Multiply ? Node::Multiply : Node::Divide;
-	std::cout << std::format("[Term {}]\n", m_current->type == Lexeme::Multiply ? "Node::Multiply" : "Node::Divide");
 
 
 	m_current = getNextLexeme();
@@ -114,7 +108,6 @@ Node* cheemton::Parser::term()
 
 Node* cheemton::Parser::factor()
 {
-	std::cout << "[Factor]\n";
 	if (!m_current) {
 		m_errors.append("[ERROR][PARSER] Uncompleted string of lexemes at factor\n");
 		return nullptr;
@@ -139,6 +132,5 @@ Node* cheemton::Parser::number()
 	Node* result = new Node{};
 	result->type = Node::Number;
 	result->lexeme = m_current;
-	std::cout << std::format("[Number {}]\n", result->lexeme->data);
 	return result;
 }
