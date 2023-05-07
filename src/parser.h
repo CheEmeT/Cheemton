@@ -1,4 +1,3 @@
-#pragma once
 #ifndef CHEEMTON_PARSER
 #define CHEEMTON_PARSER
 
@@ -18,16 +17,16 @@
 		Gramma
 	STATEMENT -> EXPRESION
 
-	EXPRESSION -> '('EXPRESSION')' 
-	EXPRESSION -> TERM '+' EXPRESSION 
-	EXPRESSION -> TERM '-' EXPRESSION 
-	EXPRESSION -> TERM
+	EXPRESSION -> FACTOR '+' EXPRESSION 
+	EXPRESSION -> FACTOR '-' EXPRESSION 
+	EXPRESSION -> FACTOR
 
-	TERM -> FACTOR '*' EXPRESSION
-	TERM -> FACTOR '/' EXPRESSION
-	TERM -> FACTOR
+	FACTOR -> TERM '*' EXPRESSION
+	FACTOR -> TERM '/' EXPRESSION
+	FACTOR -> TERM
 
-	FACTOR -> NUMBER
+	TERM -> '('EXPRESSION')'
+	TERM -> NUMBER
 
 */
 
@@ -76,8 +75,8 @@ namespace cheemton {
 		const Lexeme* getNextLexeme() { if (m_current < m_end) return m_current + 1; return nullptr; };
 		Node* statement();
 		Node* expression();
-		Node* term();
 		Node* factor();
+		Node* term();
 		Node* number();
 
 	private:

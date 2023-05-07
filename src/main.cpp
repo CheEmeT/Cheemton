@@ -6,7 +6,7 @@
 
 int main(int argc, char** argv) {
 	std::cout << "Starting program\n";
-	std::string str("(((4)  /  3))");
+	std::string str("(4 + 3) - (4)");
 	cheemton::Lexer lexer;
 
 	try {

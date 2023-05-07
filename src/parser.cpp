@@ -43,32 +43,10 @@ Node* cheemton::Parser::expression()
 		return nullptr;
 	}
 
-	Node* result = new Node{};
-	if (m_current->type == Lexeme::LeftParentheses) {
-		result->left = new Node{};
-		result->left->type = Node::LeftParentheses;
-		
-		m_current = getNextLexeme();
-		result->middle = expression();
+	Node* result = new Node{};	
+	result->left = factor();
 
-		if (m_current->type != Lexeme::LexemeType::RightParentheses) {
-			m_errors.append("[ERROR][PARSER] Expected right parantheses but got " + lexemeToString(*m_current) + '\n');
-			delete result;
-			return nullptr;
-		}
-
-		m_current = getNextLexeme();
-
-		return result;
-	}
-	
-	result->left = term();
-	if (!m_current) {
-		m_errors.append("[ERROR][PARSER] Uncompleted string of lexemes at expression\n");
-		delete result;
-		return nullptr;
-	}
-	if (m_current->type != Lexeme::Plus && m_current->type != Lexeme::Minus) {
+	if (!m_current || (m_current->type != Lexeme::Plus && m_current->type != Lexeme::Minus)) {
 		return result;
 	}
 
@@ -76,12 +54,13 @@ Node* cheemton::Parser::expression()
 	result->middle->type = m_current->type == Lexeme::Plus ? Node::Plus : Node::Minus;
 
 	m_current = getNextLexeme();
+
 	result->right = expression();
 
 	return result;
 }
 
-Node* cheemton::Parser::term()
+Node* cheemton::Parser::factor()
 {
 	if (!m_current) {
 		m_errors.append("[ERROR][PARSER] Uncompleted string of lexemes at term\n");
@@ -90,9 +69,9 @@ Node* cheemton::Parser::term()
 
 	Node* result = new Node{};
 
-	result->left = factor();
+	result->left = term();
 	m_current = getNextLexeme();
-	if (m_current->type != Lexeme::Multiply && m_current->type != Lexeme::Divide) {
+	if (!m_current || (m_current->type != Lexeme::Multiply && m_current->type != Lexeme::Divide)) {
 		return result;
 	}
 
@@ -106,7 +85,7 @@ Node* cheemton::Parser::term()
 	return result;
 }
 
-Node* cheemton::Parser::factor()
+Node* cheemton::Parser::term()
 {
 	if (!m_current) {
 		m_errors.append("[ERROR][PARSER] Uncompleted string of lexemes at factor\n");
@@ -114,6 +93,24 @@ Node* cheemton::Parser::factor()
 	}
 
 	Node* result = new Node{};
+
+	if (m_current->type == Lexeme::LeftParentheses) {
+		result->left = new Node{};
+		result->left->type = Node::LeftParentheses;
+
+		m_current = getNextLexeme();
+		result->middle = expression();
+
+		if (m_current->type != Lexeme::LexemeType::RightParentheses) {
+			m_errors.append("[ERROR][PARSER] Expected right parantheses but got " + lexemeToString(*m_current) + '\n');
+			delete result;
+			return nullptr;
+		}
+
+		m_current = getNextLexeme();
+
+		return result;
+	}
 	result->left = number();
 	return result;
 }
