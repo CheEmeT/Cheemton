@@ -2,6 +2,11 @@
 
 using namespace cheemton;
 
+#if _MSC_VER
+using std::format;
+#else
+using fmt::format;
+#endif
 
 std::vector<Lexeme>* Lexer::analyzeString(const std::string& inputString)
 {
@@ -64,7 +69,7 @@ std::vector<cheemton::Lexeme>* Lexer::analyzeString(const std::string &inputStri
 			result->emplace_back(Lexeme::LexemeType::Divide, "");
 			break;
 		default:
-			errorOutput->append(std::format("[ERROR][LEXER] [{}:{}] Unknown character \'{}\'", line, position, c));
+			errorOutput->append(format("[ERROR][LEXER] [{}:{}] Unknown character \'{}\'", line, position, c));
 			delete result;
 			return nullptr;
 		}
