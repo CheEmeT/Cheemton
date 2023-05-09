@@ -42,10 +42,10 @@ std::string cheemton::tokenNodeToString(const TokenNode& token)
 	switch (token.type)
 	{
 	case TokenNode::Number:		return "Number" + token.data;
-	case TokenNode::Plus:		return "Plus";
-	case TokenNode::Minus:		return "Minus";
-	case TokenNode::Multiply:	return "Multiply";
-	case TokenNode::Divide:		return "Divide";
+	case TokenNode::Plus:		return "+";
+	case TokenNode::Minus:		return "-";
+	case TokenNode::Multiply:	return "*";
+	case TokenNode::Divide:		return "/";
 	default:
 		return "no_type";
 	}
@@ -59,9 +59,9 @@ std::string cheemton::tokenTreeToGrapvizFile(const TokenNode* root)
 	std::stack<const TokenNode*> nodes{};
 	nodes.push(root);
 
-
+	
 	result << ("graph TREE{\n");
-	result << "\t" << tokenNodeToString(*root) << root << "[label = " << tokenNodeToString(*root) << "]\n";
+	result << "\tt" << root << "[label = \"" << tokenNodeToString(*root) << "\"]\n";
 
 	while (!nodes.empty())
 	{
@@ -70,14 +70,14 @@ std::string cheemton::tokenTreeToGrapvizFile(const TokenNode* root)
 
 		if (node->left) {
 			nodes.push(node->left.get());
-			result << "\t" << tokenNodeToString(*node->left) << node->left.get() << "[label = " << tokenNodeToString(*node->left) << "]\n";
-			result << "\t" << tokenNodeToString(*node) << node << " -- " << tokenNodeToString(*node->left) << node->left.get() << "\n";
+			result << "\tt" << node->left.get() << "[label = \"" << tokenNodeToString(*node->left) << "\"]\n";
+			result << "\tt" << node << " -- " << "t" << node->left.get() << "\n";
 		}
 
 		if (node->right) {
 			nodes.push(node->right.get());
-			result << "\t" << tokenNodeToString(*node->right) << node->right.get() << "[label = " << tokenNodeToString(*node->right) << "]\n";
-			result << "\t" << tokenNodeToString(*node) << node << " -- " << tokenNodeToString(*node->right) << node->right.get() << "\n";
+			result << "\tt" << node->right.get() << "[label = \"" << tokenNodeToString(*node->right) << "\"]\n";
+			result << "\tt" << node << " -- " << "t" << node->right.get() << "\n";
 		}
 	}
 
