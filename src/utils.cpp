@@ -1,4 +1,6 @@
 #include "utils.h"
+#include <stack>
+#include <sstream>
 
 std::string cheemton::lexemeToString(const Lexeme& lexeme)
 {
@@ -33,4 +35,53 @@ std::string cheemton::lexemeArrayToString(const std::vector<Lexeme>& array)
 		result.append(lexemeToString(array[i]) + '\n');
 	}
 	return result;
+}
+
+std::string cheemton::tokenNodeToString(const TokenNode& token)
+{
+	switch (token.type)
+	{
+	case TokenNode::Number:		return "Number" + token.data;
+	case TokenNode::Plus:		return "Plus";
+	case TokenNode::Minus:		return "Minus";
+	case TokenNode::Multiply:	return "Multiply";
+	case TokenNode::Divide:		return "Divide";
+	default:
+		return "no_type";
+	}
+
+}
+
+std::string cheemton::tokenTreeToGrapvizFile(const TokenNode* root)
+{
+	std::stringstream result;
+
+	std::stack<const TokenNode*> nodes{};
+	nodes.push(root);
+
+
+	result << ("graph TREE{\n");
+	result << "\t" << tokenNodeToString(*root) << root << "[label = " << tokenNodeToString(*root) << "]\n";
+
+	while (!nodes.empty())
+	{
+		const TokenNode* node = nodes.top();
+		nodes.pop();
+
+		if (node->left) {
+			nodes.push(node->left.get());
+			result << "\t" << tokenNodeToString(*node->left) << node->left.get() << "[label = " << tokenNodeToString(*node->left) << "]\n";
+			result << "\t" << tokenNodeToString(*node) << node << " -- " << tokenNodeToString(*node->left) << node->left.get() << "\n";
+		}
+
+		if (node->right) {
+			nodes.push(node->right.get());
+			result << "\t" << tokenNodeToString(*node->right) << node->right.get() << "[label = " << tokenNodeToString(*node->right) << "]\n";
+			result << "\t" << tokenNodeToString(*node) << node << " -- " << tokenNodeToString(*node->right) << node->right.get() << "\n";
+		}
+	}
+
+	result << "}";
+
+	return result.str();
 }

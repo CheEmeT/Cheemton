@@ -7,16 +7,16 @@
 using namespace cheemton;
 
 
-cheemton::Parser::Parser(const std::vector<Lexeme>& inputLexeme):
-	m_start(nullptr), m_end(nullptr), m_current(nullptr)
+cheemton::Parser::Parser(const std::vector<Lexeme>& inputLexeme) :
+	m_start_lexeme(nullptr), m_end_lexeme(nullptr), m_current_lexeme(nullptr)
 {
 	if (inputLexeme.empty()) {
 		m_errors.append("[PARSER] Nothing to parse.");
 		return;
 	}
-	m_start = &inputLexeme[0];
-	m_current = m_start;
-	m_end = &inputLexeme[inputLexeme.size() - 1];
+	m_start_lexeme = &inputLexeme[0];
+	m_current_lexeme = m_start_lexeme - 1;
+	m_end_lexeme = &inputLexeme[inputLexeme.size() - 1];
 }
 
 int cheemton::Parser::parseArithmetic()
@@ -24,110 +24,180 @@ int cheemton::Parser::parseArithmetic()
 	return 0;
 }
 
-Node* cheemton::Parser::getAST()
+std::unique_ptr<TokenNode> cheemton::Parser::getAST()
 {
 	return statement();
 }
 
-Node* cheemton::Parser::statement()
+std::unique_ptr<TokenNode> cheemton::Parser::statement()
 {
-	Node* result = new Node{};
-	result->left = expression();
-	return result;
+	return expression();
 }
 
-Node* cheemton::Parser::expression()
+std::unique_ptr<TokenNode> cheemton::Parser::expression()
 {
-	if (!m_current) {
-		m_errors.append("[ERROR][PARSER] Uncompleted string of lexemes at expression\n");
-		return nullptr;
+	std::unique_ptr<TokenNode> result = std::make_unique<TokenNode>();
+
+	m_current_lexeme = getNextLexeme();
+	if (m_current_lexeme)
+	{
+		result->left = term();
+		if (!result->left)
+		{
+			result.reset();
+			return result;
+		}
 	}
-
-	Node* result = new Node{};	
-	result->left = factor();
-
-	if (!m_current || (m_current->type != Lexeme::Plus && m_current->type != Lexeme::Minus)) {
+	else
+	{
+		addError("Expected expression but got nothing.");
+		result.reset();
 		return result;
 	}
 
-	result->middle = new Node{};
-	result->middle->type = m_current->type == Lexeme::Plus ? Node::Plus : Node::Minus;
-
-	m_current = getNextLexeme();
-
-	result->right = expression();
-
-	return result;
-}
-
-Node* cheemton::Parser::factor()
-{
-	if (!m_current) {
-		m_errors.append("[ERROR][PARSER] Uncompleted string of lexemes at term\n");
-		return nullptr;
-	}
-
-	Node* result = new Node{};
-
-	result->left = term();
-	m_current = getNextLexeme();
-	if (!m_current || (m_current->type != Lexeme::Multiply && m_current->type != Lexeme::Divide)) {
+	const Lexeme* check_lexeme = getNextLexeme();
+	if (!check_lexeme) {
+		result = std::move(result->left);
 		return result;
 	}
 
-	result->middle = new Node{};
-	result->middle->type = m_current->type == Lexeme::Multiply ? Node::Multiply : Node::Divide;
-
-
-	m_current = getNextLexeme();
-	result->right = expression();
-
-	return result;
-}
-
-Node* cheemton::Parser::term()
-{
-	if (!m_current) {
-		m_errors.append("[ERROR][PARSER] Uncompleted string of lexemes at factor\n");
-		return nullptr;
+	if (check_lexeme->type == Lexeme::Plus)
+	{
+		result->type = TokenNode::Plus;
+		m_current_lexeme = getNextLexeme();
+		result->right = expression();
+		if (!result->right)
+		{
+			result.reset();
+		}
+	}
+	else if (check_lexeme->type == Lexeme::Minus)
+	{
+		result->type = TokenNode::Minus;
+		m_current_lexeme = getNextLexeme();
+		result->right = expression();
+		if (!result->right)
+		{
+			result.reset();
+		}
+	}
+	else {
+		result = std::move(result->left);
 	}
 
-	Node* result = new Node{};
+	
 
-	if (m_current->type == Lexeme::LeftParentheses) {
-		result->left = new Node{};
-		result->left->type = Node::LeftParentheses;
+	return std::move(result);
+}
 
-		m_current = getNextLexeme();
-		result->middle = expression();
+std::unique_ptr<TokenNode> cheemton::Parser::term()
+{
+	std::unique_ptr<TokenNode> result = std::make_unique<TokenNode>();
 
-		if (m_current->type != Lexeme::LexemeType::RightParentheses) {
-			m_errors.append("[ERROR][PARSER] Expected right parantheses but got " + lexemeToString(*m_current) + '\n');
-			delete result;
-			return nullptr;
+	//m_current_lexeme = getNextLexeme();
+	if (m_current_lexeme)
+	{
+		result->left = factor();
+		if (!result->left)
+		{
+			result.reset();
+			return std::move(result);
+		}
+	}
+	else
+	{
+		addError("Expected term but got nothing.");
+		result.reset();
+		return std::move(result);
+	}
+
+	const Lexeme* check_lexeme = getNextLexeme();
+	if (!check_lexeme) {
+		result = std::move(result->left);
+		return std::move(result);
+	}
+
+	if (check_lexeme->type == Lexeme::Multiply)
+	{
+		result->type = TokenNode::Multiply;
+		m_current_lexeme = check_lexeme;
+		m_current_lexeme = getNextLexeme();
+		result->right = term();
+		if (!result->right)
+		{
+			result.reset();
+		}
+	}
+	else if (check_lexeme->type == Lexeme::Divide)
+	{
+		result->type = TokenNode::Divide;
+		m_current_lexeme = check_lexeme;
+		m_current_lexeme = getNextLexeme();
+		result->right = term();
+		if (!result->right)
+		{
+			result.reset();
+		}
+	}
+	else {
+		result = std::move(result->left);
+	}
+	//else {
+	//	addError("Expected multiply or divide but got " + lexemeToString(*m_current_lexeme));
+	//	result.reset();
+	//	return std::move(result);
+	//}
+
+
+
+	return std::move(result);
+}
+
+std::unique_ptr<TokenNode> cheemton::Parser::factor()
+{
+	std::unique_ptr<TokenNode> result = std::make_unique<TokenNode>();
+
+	//m_current_lexeme = getNextLexeme();
+	if (!m_current_lexeme) {
+		result.reset();
+		return std::move(result);
+	}
+
+	if (m_current_lexeme->type == Lexeme::Number) {
+		result = number();
+		return result;
+	}
+	else if (m_current_lexeme->type == Lexeme::LeftParentheses){
+		result = std::move(expression());
+
+		m_current_lexeme = getNextLexeme();
+		if (!m_current_lexeme) {
+			addError("')' expected but got the end of array.");
+			result.reset();
+			return std::move(result);
 		}
 
-		m_current = getNextLexeme();
+		if (m_current_lexeme->type != Lexeme::RightParentheses) {
+			addError("')' expected but got " + lexemeToString(*m_current_lexeme));
+			result.reset();
+			return std::move(result);
+		}
 
-		return result;
+		return std::move(result);
+
 	}
-	result->left = number();
-	return result;
+	else {
+		addError("Number or '(' expected but got " + lexemeToString(*m_current_lexeme));
+		result.reset();
+		return std::move(result);
+	}
 }
 
-Node* cheemton::Parser::number()
+std::unique_ptr<TokenNode> cheemton::Parser::number()
 {
-	if (!m_current) {
-		m_errors.append("[ERROR][PARSER] Uncompleted string of lexemes at number\n");
-		return nullptr;
-	}
-
-	if (m_current->type != Lexeme::Number) {
-		m_errors.append("[ERROR][PARSER] Expected a number but got " + lexemeToString(*m_current) + '\n');
-		return nullptr;
-	}
-	Node* result = new Node{};
-	result->type = Node::Number;
-	result->lexeme = m_current;
-	return result;
+	std::unique_ptr<TokenNode> result = std::make_unique<TokenNode>();
+	result->type = TokenNode::Number;
+	result->data = m_current_lexeme->data;
+	return std::move(result);
 }
+

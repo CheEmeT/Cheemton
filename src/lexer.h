@@ -21,11 +21,12 @@ namespace cheemton {
 			//TODO: Number Types
 			Number,
 			//------------------
-			Variable,
 			Plus,
 			Minus,
 			Multiply,
-			Divide,
+			Divide, 
+
+			Variable,
 			LeftParentheses,
 			RightParentheses
 		};
@@ -37,8 +38,8 @@ namespace cheemton {
 	class Lexer {
 	public:
 		Lexer() = default;
-		std::vector<Lexeme>* analyzeString(const std::string &inputString);
-		std::vector<Lexeme>* analyzeString(const std::string &inputString, std::string* errorOutput);
+		std::vector<Lexeme> analyzeString(const std::string &inputString);
+		std::vector<Lexeme> analyzeString(const std::string &inputString, std::string* errorOutput);
 	private:
 	};
 
